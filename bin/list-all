@@ -1,1 +1,9 @@
+GITHUB_API_TOKEN="faf7e0ab1b406d88547daf07c1571ac448d284bd"
 
+curl -s "https://api.github.com/repos/tmux/tmux/releases" -H "Authorization: token $GITHUB_API_TOKEN" | \
+    grep "tag_name" | \
+    # extract the tag_name by selecting the 4th field
+    cut -d '"' -f4 | \
+    # reverses the whole list so the latest is at the bottom
+    tac | \
+    tr "\n" " "
