@@ -1,0 +1,10 @@
+language: c
+script:
+  - asdf plugin-test tmux $TRAVIS_BUILD_DIR 'tmux -V'
+
+before_script:
+  - git clone https://github.com/asdf-vm/asdf.git
+  - . asdf/asdf.sh
+os:
+  - linux
+  - osx
