@@ -2,8 +2,11 @@
 tmux plugin for [asdf version manager](https://github.com/asdf-vm/asdf)
 
 
-## Requirements
-`git`
+## Dependencies
+- `git`
+- `libevent` (apt-get install libevent-dev)
+- `ncurses`
+- Refer to the [tmux](https://github.com/tmux/tmux) README for more dependencies
 
 
 ## Install
