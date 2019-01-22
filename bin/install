@@ -1,1 +1,79 @@
+#!/usr/bin/env bash
+set -eu
+[ "${BASH_VERSINFO[0]}" -ge 3 ] && set -o pipefail
 
+get_platform () {
+    local platform="$(uname | tr '[:upper:]' '[:lower:]')"
+
+    case "$platform" in
+        linux|freebsd)
+            echo "Platform '${platform}' supported!" >&2
+            # no need to change the platform variable
+            ;;
+        darwin)
+            echo "Platform '${platform}' supported!" >&2
+            # update platform to fit what is expected in url
+            local platform="macos"
+            ;;
+        *)
+            echo "Platform '${platform}' not supported!" >&2
+            exit 1
+            ;;
+    esac
+
+    echo -n $platform
+}
+
+my_mktemp () {
+    local tempdir=$(mktemp -d asdf-tmux.XXXX)
+    echo -n $tempdir
+}
+
+log () {
+    echo "asdf-tmux: $@"
+}
+
+install_tmux () {
+    local install_type=$1
+    local version=$2
+    local install_path=$3
+    local platform=$(get_platform)
+    local tempdir=$(my_mktemp $platform)
+    local github_api_token=$GITHUB_API_TOKEN
+    local base_path=$PWD
+
+    echo "$install_type"
+    echo "$version"
+    echo "$install_path"
+    echo "$platform"
+    echo "$tempdir"
+
+    if [ $github_api_token = "" ]; then
+        log "warning: github rate limits requests. Please consider creating a \
+         Personal Access Token and setting the GITHUB_API_TOKEN. Check out the \
+         asdf-tmux README for more info."
+    fi
+
+    if [ $install_type != "version" ]; then
+        log "only exact versions are supported at this time."
+        exit 1
+    fi
+
+    cd $tempdir
+    log "Downloading tmux $version"
+    # Download tar
+    curl -L "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" \
+        -H "Authorization: token $GITHUB_API_TOKEN" | \
+        tar zx
+    # Should be the only thing in the directory
+    cd "$(ls)"
+    log "Building tmux"
+    ./configure && make >> /dev/null 2>&1
+    mkdir -p $install_path/bin
+    cp tmux $install_path/bin/tmux
+    log "tmux installed to $install_path/bin/tmux"
+    rm -r "$base_path/$tempdir"
+     
+}
+
+install_tmux $ASDF_INSTALL_TYPE $ASDF_INSTALL_VERSION $ASDF_INSTALL_PATH
