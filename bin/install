@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -e
 [ "${BASH_VERSINFO[0]}" -ge 3 ] && set -o pipefail
 
 get_platform () {
@@ -39,7 +39,6 @@ install_tmux () {
     local install_path=$3
     local platform=$(get_platform)
     local tempdir=$(my_mktemp $platform)
-    local github_api_token="${GITHUB_API_TOKEN:-}"
     local base_path=$PWD
 
     echo "$install_type"
@@ -48,10 +47,8 @@ install_tmux () {
     echo "$platform"
     echo "$tempdir"
 
-    if [ $github_api_token = "" ]; then
-        log "warning: github rate limits requests. Please consider creating a \
-         Personal Access Token and setting the GITHUB_API_TOKEN. Check out the \
-         asdf-tmux README for more info."
+    if [ -z $GITHUB_API_TOKEN ]; then
+        log "warning: github rate limits requests. Please consider creating a Personal Access Token and setting the GITHUB_API_TOKEN. Check out the asdf-tmux README for more info."
     fi
 
     if [ $install_type != "version" ]; then
