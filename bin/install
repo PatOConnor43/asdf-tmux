@@ -39,7 +39,7 @@ install_tmux () {
     local install_path=$3
     local platform=$(get_platform)
     local tempdir=$(my_mktemp $platform)
-    local github_api_token=$GITHUB_API_TOKEN
+    local github_api_token="${GITHUB_API_TOKEN:-}"
     local base_path=$PWD
 
     echo "$install_type"
