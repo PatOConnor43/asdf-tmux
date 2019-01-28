@@ -2,6 +2,10 @@
 set -e
 [ "${BASH_VERSINFO[0]}" -ge 3 ] && set -o pipefail
 
+cleanup () {
+    rm -rf "$base_path/$tempdir"
+}
+
 get_platform () {
     local platform="$(uname | tr '[:upper:]' '[:lower:]')"
 
@@ -33,6 +37,41 @@ log () {
     echo "asdf-tmux: $@"
 }
 
+install_tmux_version () {
+    cd $tempdir
+    log "Downloading tmux $version"
+    # Download tar
+    curl -L "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" \
+        -H "Authorization: token $GITHUB_API_TOKEN" | \
+        tar zx
+    # Should be the only thing in the directory
+    cd "$(ls)"
+    log "Building tmux"
+    ./configure && make >> /dev/null 2>&1
+    mkdir -p $install_path/bin
+    cp tmux $install_path/bin/tmux
+    log "tmux installed to $install_path/bin/tmux"
+}
+
+
+install_tmux_ref () {
+   cd $tempdir
+   git clone git@github.com:tmux/tmux
+   cd tmux
+   git checkout $version
+   log "Building tmux"
+   if [ ! -f autogen.sh ]; then
+       log "autogen.sh could not be found in this commit. Try another commit. Exiting."
+       cleanup
+       exit 2
+   fi
+   sh autogen.sh
+   ./configure && make >> /dev/null 2>&1
+   mkdir -p $install_path/bin
+   cp tmux $install_path/bin/tmux
+   log "tmux installed to $install_path/bin/tmux"
+}
+
 install_tmux () {
     local install_type=$1
     local version=$2
@@ -51,26 +90,12 @@ install_tmux () {
         log "warning: github rate limits requests. Please consider creating a Personal Access Token and setting the GITHUB_API_TOKEN. Check out the asdf-tmux README for more info."
     fi
 
-    if [ $install_type != "version" ]; then
-        log "only exact versions are supported at this time."
-        exit 1
+    if [ $install_type = "version" ]; then
+        install_tmux_version
+    else
+        install_tmux_ref
     fi
-
-    cd $tempdir
-    log "Downloading tmux $version"
-    # Download tar
-    curl -L "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" \
-        -H "Authorization: token $GITHUB_API_TOKEN" | \
-        tar zx
-    # Should be the only thing in the directory
-    cd "$(ls)"
-    log "Building tmux"
-    ./configure && make >> /dev/null 2>&1
-    mkdir -p $install_path/bin
-    cp tmux $install_path/bin/tmux
-    log "tmux installed to $install_path/bin/tmux"
-    rm -r "$base_path/$tempdir"
-     
+    cleanup
 }
 
 install_tmux $ASDF_INSTALL_TYPE $ASDF_INSTALL_VERSION $ASDF_INSTALL_PATH
