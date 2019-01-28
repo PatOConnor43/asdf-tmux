@@ -17,6 +17,10 @@ asdf plugin-add tmux https://github.com/patoconnor43/asdf-tmux.git
 
 ## Use
 
+This plugin supports `version` and `ref` install types. Meaning, you can install specific tagged versions are well as
+specific commits. You can use any identifier that git uses for the commit that you want. As an example, if you wanted latest master, you would just use `asdf install tmux ref:master`. Remember, that this will install what is current master and will not automatically rebuild itself.
+
+
 Check the [asdf](https://github.com/asdf-vm/asdf) readme for instructions on how to install & manage versions of tmux.
 
 ## Contributing
