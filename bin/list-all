@@ -1,4 +1,4 @@
-GITHUB_API_TOKEN="faf7e0ab1b406d88547daf07c1571ac448d284bd"
+#!/usr/bin/env bash
 
 VERSIONS=$(curl -s "https://api.github.com/repos/tmux/tmux/releases" -H "Authorization: token $GITHUB_API_TOKEN" | \
     grep "tag_name" | \
